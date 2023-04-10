@@ -21,6 +21,10 @@ public class QuizTest extends JFrame implements ActionListener {
 
     private final ButtonGroup answerButtonGroup = new ButtonGroup();
 
+    private final int timeLimitInSeconds = 360;
+    private Timer timer;
+    private final JLabel timeLabel = new JLabel("Time left: " + timeLimitInSeconds + "seconds");
+
 
     public QuizTest() {
         createWindow();
@@ -28,6 +32,7 @@ public class QuizTest extends JFrame implements ActionListener {
         setLocationAndSize();
         addComponentToFrame();
         actionEvent();
+        startTimer();
 
     }
 
@@ -67,6 +72,7 @@ public class QuizTest extends JFrame implements ActionListener {
         answerButtons[3].setBounds(20, 180, 200, 35);
         nextButton.setBounds(260, 180, 70, 35);
         questionNumberLabel.setBounds(20, 190, 100, 35);
+        timeLabel.setBounds(240, 10, 150, 40);
 
     }
 
@@ -82,6 +88,8 @@ public class QuizTest extends JFrame implements ActionListener {
         frame.add(panel);
         frame.add(nextButton);
         frame.add(questionNumberLabel);
+        frame.add(timeLabel);
+
     }
 
     public void updateQuestion() {
@@ -119,11 +127,35 @@ public class QuizTest extends JFrame implements ActionListener {
                 quizService.nextQuestion();
                 updateQuestion();
             } else {
-                JOptionPane.showMessageDialog(QuizTest.this, "Quiz finished! You answered " + quizService.getCorrectAnswers() + " questions correctly out of " + (quizService.getCorrectAnswers() + quizService.getWrongAnswers()) + " questions. You can close the window.");
+                JOptionPane.showMessageDialog(QuizTest.this, "Quiz finished! You answered " + quizService.getCorrectAnswers() +
+                        " questions correctly out of " + (quizService.getCorrectAnswers() + quizService.getWrongAnswers()));
+                timer.stop();
                 frame.dispose();
             }
         } else {
             JOptionPane.showMessageDialog(QuizTest.this, "Please select an answer!");
         }
     }
+
+    public void startTimer() {
+        int delay = 1000; // intervalul de actualizare a timer-ului in milisecunde (1 secunda)
+        ActionListener taskPerformer = new ActionListener() {
+            int timeLeft = timeLimitInSeconds;
+
+            public void actionPerformed(ActionEvent evt) {
+                timeLabel.setText("Time Left: " + timeLeft + " seconds");
+                timeLeft--;
+                if (timeLeft < 0) {
+                    timer.stop();
+                    timeLabel.setText("Time's up!");
+                    JOptionPane.showMessageDialog(QuizTest.this, "Time's up! You answered " + quizService.getCorrectAnswers() +
+                            " questions correctly");
+                    frame.dispose();
+                }
+            }
+        };
+        timer = new Timer(delay, taskPerformer);
+        timer.start();
+    }
+
 }
